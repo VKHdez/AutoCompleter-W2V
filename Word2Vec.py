@@ -11,23 +11,33 @@ class Word2Vec:
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
         self.epochs = epochs
-        self.optimized = optimizer
+
+        if optimizer == 'adam':
+            self.optimizer = tf.optimizers.Adam()
+        else:
+            self.optimizer = tf.optimizers.SGF(learning_rate=0.1)
+
+
+
 
     # TRAIN METHOD
     def entrenamiento(self, x_train, y_train):
         self.W1 = tf.Variable(tf.random.normal([self.vocab_size, self.embedding_dim]))
-        self.b1 = tf.Variable(tf.random.normal([self.embedding_dim]))  # bias
+        self.b1 = tf.Variable(tf.random.normal([self.embedding_dim])) # bias
         self.W2 = tf.Variable(tf.random.normal([self.embedding_dim, self.vocab_size]))
         self.b2 = tf.Variable(tf.random.normal([self.vocab_size]))
 
         for _ in range(self.epochs):
             with tf.GradientTape() as t:
                 hidden_layer = tf.add(tf.matmul(x_train, self.W1), self.b1)
+
                 output_layer = tf.nn.softmax(tf.add(tf.matmul(hidden_layer, self.W2), self.b2))
+
                 perdidad_entropia_cruzada = tf.reduce_mean(
-                    -tf.math.reduce.sum(y_train * tf.math.log(output_layer), axis=[1]))
+                    -tf.math.reduce_sum(y_train * tf.math.log(output_layer), axis=[1]))
 
             grads = t.gradient(perdidad_entropia_cruzada, [self.W1, self.b1, self.W2, self.b2])
+
             self.optimizer.apply_gradients(zip(grads, [self.W1, self.b1, self.W2, self.b2]))
 
             if (_ % 1000 == 0):
